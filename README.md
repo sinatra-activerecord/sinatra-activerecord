@@ -42,6 +42,21 @@ subclass `Sinatra::Base`), you will need to manually add the line:
 register Sinatra::ActiveRecordExtension
 ```
 
+You can also specify the database with a hash:
+
+```ruby
+require 'sinatra'
+require 'sinatra/activerecord'
+
+db_config = YAML::load(File.open('config/database.yml'))[env].symbolize_keys
+
+set :database, { adapter: "mysql2",
+                 host: db_config[:host],
+                 database: db_config[:database],
+                 username: db_config[:username],
+                 password: db_config[:password] }
+```
+
 Now require the rake tasks and your app in your `Rakefile`:
 
 ```ruby
