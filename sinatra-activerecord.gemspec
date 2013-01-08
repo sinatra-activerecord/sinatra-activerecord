@@ -22,7 +22,6 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'sinatra', '~> 1.0'
   gem.add_dependency 'activerecord', '~> 3.0'
 
-  gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec', '>= 2.10'
   gem.add_development_dependency 'sqlite3'
 end
