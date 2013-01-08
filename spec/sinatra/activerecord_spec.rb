@@ -7,7 +7,7 @@ describe "the sinatra extension" do
 
   def new_sinatra_application
     Class.new(Sinatra::Base) do
-      set :app_file, File.join(ROOT, "tmp")
+      set :app_file, File.join(ROOT, "tmp/app.rb")
       register Sinatra::ActiveRecordExtension
     end
   end
@@ -74,7 +74,16 @@ describe "the sinatra extension" do
     it "doesn't raise errors on missing file" do
       expect { @app.set :database_file, "database.yml" }.to_not raise_error
     end
+
+    it "may contain a 'development' namespace" do
+      FileUtils.mkdir_p("tmp")
+      FileUtils.cp("spec/fixtures/database_with_namespace.yml", "tmp")
+      expect {
+        @app.set :database_file, "database_with_namespace.yml"
+      }.to change{ActiveRecord::Base.connected?}.to(true)
+    end
   end
+
 
   context "DATABASE_URL is set" do
     before(:all) { ENV["DATABASE_URL"] = database_url }

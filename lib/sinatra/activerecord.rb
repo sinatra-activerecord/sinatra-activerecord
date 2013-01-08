@@ -30,14 +30,15 @@ module Sinatra
       require 'pathname'
 
       return if app_file.nil?
-      path = File.join(app_file, path) if Pathname.new(path).relative?
+      path = File.join(File.dirname(app_file), path) if Pathname.new(path).relative?
 
       if File.exists?(path)
         require 'yaml'
         require 'erb'
 
         database_hash = YAML.load(ERB.new(File.read(path)).result) || {}
-        database_hash = database_hash[environment] if database_hash[environment]
+        environment_string = environment.to_s
+        database_hash = database_hash[environment_string] if database_hash[environment_string]
         set :database, database_hash
       end
     end
