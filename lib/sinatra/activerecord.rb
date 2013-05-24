@@ -52,7 +52,7 @@ module Sinatra
       app.helpers ActiveRecordHelper
 
       # re-connect if database connection dropped
-      app.before { ActiveRecord::Base.verify_active_connections! }
+      # app.before { ActiveRecord::Base.verify_active_connections! }
       app.after  { ActiveRecord::Base.clear_active_connections! }
     end
 
