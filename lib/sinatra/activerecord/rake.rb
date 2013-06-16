@@ -41,6 +41,24 @@ module Sinatra
       end
     end
 
+    def dump_schema(file_name = 'db/schema.rb')
+      silence_activerecord do
+        ActiveRecord::Migration.suppress_messages do
+          # Create file
+          out = File.new(file_name, 'w')
+
+          # Load schema
+          ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection, out)
+
+          out.close
+        end
+      end
+    end
+
+    def load_schema(file_name = 'db/schema.rb')
+      load(file_name)
+    end
+
     private
 
     def migrations_dir

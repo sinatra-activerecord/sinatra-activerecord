@@ -84,4 +84,57 @@ describe "Rake tasks" do
       expect { rollback(2) }.to change{schema_version}.to(0)
     end
   end
+
+  describe 'db:schema' do
+    def schema_file
+      'foo_schema.rb'
+    end
+
+    after(:each) do
+      File.delete(schema_file)
+    end
+
+    describe "db:schema:dump" do
+      it "should dump the schema for the current database state" do
+        dump_schema(schema_file)
+        File.exists?(schema_file).should be_true
+      end
+    end
+
+    describe "db:schema:load" do
+      it "should load the schema file " do
+        # Create some tables
+        ActiveRecord::Migration.class_eval do
+          create_table :posts do |t|
+            t.string  :title
+            t.text :body
+          end
+
+          create_table :people do |t|
+            t.string :first_name
+            t.string :last_name
+            t.string :short_name
+          end
+        end
+
+        # Dump file
+        dump_schema(schema_file)
+
+        # Drop table
+        begin
+          ActiveRecord::Schema.drop_table('posts')
+          ActiveRecord::Schema.drop_table('people')
+        rescue
+          nil
+        end
+
+        # Load schema
+        load_schema(schema_file)
+
+        # Expect tables to be there
+        ActiveRecord::Base.connection.table_exists?('posts').should be_true
+        ActiveRecord::Base.connection.table_exists?('people').should be_true
+      end
+    end    
+  end
 end

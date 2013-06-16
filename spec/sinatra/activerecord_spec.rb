@@ -3,7 +3,9 @@ require 'sinatra/base'
 require 'sinatra/activerecord'
 
 describe "the sinatra extension" do
-  let(:database_url) { "sqlite3:///tmp/foo.sqlite3" }
+  def database_url
+    "sqlite3:///tmp/foo.sqlite3"
+  end
 
   def new_sinatra_application
     Class.new(Sinatra::Base) do
