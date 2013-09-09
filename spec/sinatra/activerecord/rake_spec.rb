@@ -43,7 +43,7 @@ describe "Rake tasks" do
     it "creates the migration file" do
       create_migration("create_users")
       migration_file = Dir["tmp/*"].first
-      migration_file.should match(/\d+_create_users\.rb$/)
+      expect( migration_file ).to match(/\d+_create_users\.rb$/)
     end
   end
 
@@ -97,7 +97,9 @@ describe "Rake tasks" do
     describe "db:schema:dump" do
       it "should dump the schema for the current database state" do
         dump_schema(schema_file)
-        File.exists?(schema_file).should be_true
+        expect {
+          File.exists?(schema_file)
+        }.to be_true
       end
     end
 
@@ -132,9 +134,13 @@ describe "Rake tasks" do
         load_schema(schema_file)
 
         # Expect tables to be there
-        ActiveRecord::Base.connection.table_exists?('posts').should be_true
-        ActiveRecord::Base.connection.table_exists?('people').should be_true
+        expect(
+          ActiveRecord::Base.connection.table_exists?('posts')
+        ).to be_true
+        expect(
+          ActiveRecord::Base.connection.table_exists?('people')
+        ).to be_true
       end
-    end    
+    end
   end
 end

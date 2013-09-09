@@ -27,7 +27,9 @@ describe "the sinatra extension" do
   end
 
   it "exposes the database object" do
-    @app.should respond_to(:database)
+    expect(
+      @app
+    ).to respond_to(:database)
   end
 
   it "raises the proper error when trying to establish connection with a nonexisting database" do
@@ -41,12 +43,12 @@ describe "the sinatra extension" do
 
   it "can have the SQLite database in a folder" do
     @app.set :database, "sqlite3:///tmp/foo.sqlite3"
-    expect { ActiveRecord::Base.connection }.to_not raise_error(SQLite3::CantOpenException)
+    expect { ActiveRecord::Base.connection }.to_not raise_error
   end
 
   it "accepts SQLite database URLs without the '3'" do
     @app.set :database, "sqlite:///tmp/foo.sqlite3"
-    expect { ActiveRecord::Base.connection }.to_not raise_error(ActiveRecord::AdapterNotFound)
+    expect { ActiveRecord::Base.connection }.to_not raise_error
   end
 
   it "accepts a hash for the database" do
