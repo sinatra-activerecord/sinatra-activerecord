@@ -120,10 +120,12 @@ database: "tmp/foo.sqlite3"
     end
 
     it "is overriden by config/database.yml" do
-      FileUtils.mkdir_p("tmp/config")
-      FileUtils.touch("tmp/config/database.yml")
+      FileUtils.mkdir_p("config")
+      FileUtils.touch("config/database.yml")
 
       expect { @app = new_sinatra_application }.to raise_error(ActiveRecord::AdapterNotSpecified)
+
+      FileUtils.rm_rf("config")
     end
   end
 end
