@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.2.4
+
+- By default look for a `config/database.yml` in the root of the running process.
+
 ## Version 1.2.3
 
 - Allow ActiveRecord 4
