@@ -53,7 +53,7 @@ module Sinatra
     def self.registered(app)
       app.set :activerecord_logger, Logger.new(STDOUT)
       app.set :database_spec, ENV['DATABASE_URL']
-      app.set :database_file, "config/database.yml"
+      app.set :database_file, "#{Dir.pwd}/config/database.yml"
       app.database if app.database_spec
       app.helpers ActiveRecordHelper
 
