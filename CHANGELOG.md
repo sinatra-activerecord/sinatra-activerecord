@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.2.5
+
+- Fix a bug with ActiveRecord 3.0.
+
 ## Version 1.2.4
 
 - By default look for a `config/database.yml` in the root of the running process.
