@@ -129,7 +129,7 @@ This gem was made in 2009 by Blake Mizerany, creator of Sinatra.
 
 ## Social
 
-You can follow me on Twitter, I'm [@m_janko](http://twitter.com/m_janko).
+You can follow me on Twitter, I'm [@jankomarohnic](http://twitter.com/jankomarohnic).
 
 ## License
 
