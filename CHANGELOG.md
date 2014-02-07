@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.3.0
+
+- Added `db:create`, `db:drop` and `db:reset` Rake tasks.
+
 ## Version 1.2.5
 
 - Fix a bug with ActiveRecord 3.0.
