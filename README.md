@@ -47,9 +47,15 @@ In the Terminal test that it works:
 
 ```sh
 $ rake -T
-rake db:create_migration  # create an ActiveRecord migration
-rake db:migrate           # migrate the database (use version with VERSION=n)
-rake db:rollback          # roll back the migration (use steps with STEP=n)
+rake db:create                     # create the database from config/database.yml from the current Sinatra env
+rake db:create_migration           # create an ActiveRecord migration
+rake db:drop                       # drops the data from config/database.yml from the current Sinatra env
+rake db:migrate                    # migrate the database (use version with VERSION=n)
+rake db:rollback                   # roll back the migration (use steps with STEP=n)
+rake db:schema:dump                # dump schema into file
+rake db:schema:load                # load schema into database
+rake db:seed                       # load the seed data from db/seeds.rb
+rake db:setup                      # create the database and load the schema
 ```
 
 And that's it, you're all set :)
