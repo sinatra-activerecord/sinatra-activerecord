@@ -29,13 +29,13 @@ namespace :db do
   desc "migrate the database (use version with VERSION=n)"
   task :migrate do
     Sinatra::ActiveRecordTasks.migrate(ENV["VERSION"])
-    Rake::Task["db:schema:dump"].invoke if ActiveRecord::Base.schema_format == :ruby
+    Rake::Task["db:schema:dump"].invoke if [:sql, :ruby].include? ActiveRecord::Base.schema_format
   end
 
   desc "roll back the migration (use steps with STEP=n)"
   task :rollback do
     Sinatra::ActiveRecordTasks.rollback(ENV["STEP"])
-    Rake::Task["db:schema:dump"].invoke if ActiveRecord::Base.schema_format == :ruby
+    Rake::Task["db:schema:dump"].invoke if [:sql, :ruby].include? ActiveRecord::Base.schema_format
   end
 
   namespace :schema do
