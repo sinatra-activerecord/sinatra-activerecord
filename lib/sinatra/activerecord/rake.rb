@@ -64,7 +64,7 @@ module Sinatra
       end
     end
 
-    def dump_schema(file_name = 'db/schema.rb')
+    def dump_schema(file_name = schema_format_file)
       silence_activerecord do
         ActiveRecord::Migration.suppress_messages do
           # Create file
@@ -86,7 +86,7 @@ module Sinatra
       end
     end
 
-    def load_schema(file_name = 'db/schema.rb')
+    def load_schema(file_name = schema_format_file)
       load(file_name)
     end
 
@@ -123,6 +123,12 @@ module Sinatra
       ActiveRecord::Base.logger = nil
       yield if block_given?
       ActiveRecord::Base.logger = old_logger
+    end
+
+    def schema_format_file
+      file_name = 'db/structure.sql' if ActiveRecord::Base.schema_format == :sql
+      file_name = 'db/schema.rb' if ActiveRecord::Base.schema_format == :ruby
+      file_name
     end
   end
 end
