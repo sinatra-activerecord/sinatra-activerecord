@@ -255,4 +255,24 @@ describe "Rake tasks" do
     end
   end
 
+  describe 'db_dir' do
+    it "is set to 'db' by default" do
+      expect(self).to receive(:db_dir=).with('db').and_call_original
+      expect(db_dir).to eq('db')
+    end
+  end
+
+  describe 'db_dir=' do
+    it "updates ActiveRecord::Tasks::DatabaseTasks.db_dir" do
+      expect(ActiveRecord::Tasks::DatabaseTasks).to receive(:db_dir=).
+        with('custom/db')
+      self.db_dir = 'custom/db'
+    end
+
+    it "updates the ivar" do
+      expect(db_dir).to eq('db')
+      self.db_dir = 'custom/db'
+      expect(db_dir).to eq('custom/db')
+    end
+  end
 end

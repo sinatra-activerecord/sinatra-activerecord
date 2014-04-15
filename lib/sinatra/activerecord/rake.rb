@@ -109,11 +109,13 @@ module Sinatra
     end
 
     def db_dir
-      ActiveRecord::Tasks::DatabaseTasks.db_dir ||= 'db'
+      return @db_dir if @db_dir
+      self.db_dir = 'db'
     end
 
     def db_dir=(dir)
-      ActiveRecord::Tasks::DatabaseTasks.db_dir = dir
+      @db_dir = dir
+      ActiveRecord::Tasks::DatabaseTasks.db_dir = @db_dir
     end
 
     private
