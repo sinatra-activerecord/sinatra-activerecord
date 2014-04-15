@@ -262,7 +262,7 @@ describe "Rake tasks" do
   end
 
   describe 'db_dir=' do
-    it "setting it will update ActiveRecord::Tasks::DatabaseTasks.db_dir" do
+    it "updates ActiveRecord::Tasks::DatabaseTasks.db_dir" do
       expect(ActiveRecord::Tasks::DatabaseTasks).to receive(:db_dir=).
         with('custom/db')
       self.db_dir = 'custom/db'
