@@ -44,7 +44,7 @@ module Sinatra
         }
       end
 
-      ActiveRecord::Tasks::DatabaseTasks.database_configuration = ActiveRecord::Base.configurations
+      ActiveRecord::Tasks::DatabaseTasks.database_configuration = ActiveRecord::Base.configurations if ActiveRecord.const_defined?('Tasks')
     end
 
     def database
