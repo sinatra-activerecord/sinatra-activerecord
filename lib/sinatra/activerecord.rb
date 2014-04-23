@@ -43,6 +43,8 @@ module Sinatra
           environment.to_s => ActiveRecord::Base.connection.pool.spec.config
         }
       end
+
+      ActiveRecord::Tasks::DatabaseTasks.database_configuration = ActiveRecord::Base.configurations
     end
 
     def database

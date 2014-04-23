@@ -12,6 +12,9 @@ end
 
 describe "the rake tasks" do
   before do
+    require 'rake'
+    require 'sinatra/activerecord/rake'
+
     Class.new(Sinatra::Base) do
       register Sinatra::ActiveRecordExtension
       set :database, {adapter: "sqlite3", database: "tmp/foo.sqlite3"}
@@ -19,9 +22,6 @@ describe "the rake tasks" do
 
     FileUtils.mkdir_p "db"
     FileUtils.touch "db/seeds.rb"
-
-    require 'rake'
-    require 'sinatra/activerecord/rake'
 
     class Rake::Task
       def invoke_with_reenable
