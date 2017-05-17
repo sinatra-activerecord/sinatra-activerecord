@@ -51,6 +51,8 @@ module Sinatra
         ActiveRecord::Base.configurations ||= {}
         ActiveRecord::Base.configurations[environment.to_s] = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(spec).to_hash
       end
+
+      ActiveRecord::Tasks::DatabaseTasks.database_configuration = ActiveRecord::Base.configurations if ActiveRecord.const_defined?('Tasks')
     end
 
     def database
