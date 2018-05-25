@@ -72,6 +72,18 @@ end
 # for schema dump, adjust output
 class ActiveRecord::SchemaDumper
   @@wide = 14
+
+  alias_method :header_real, :header
+  def header(stream)
+    buffer = StringIO.new
+    header_real(buffer)
+    string = buffer.string
+
+    string = $' if string =~ /^(?=\w)/ # remove canned instructions
+
+    stream.print string
+  end
+
   alias_method :table_real, :table
   def table(table, stream)
     buffer = StringIO.new
