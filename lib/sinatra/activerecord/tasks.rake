@@ -39,6 +39,7 @@ namespace :db do
     MIGRATION
 
     puts path
+    exit
   end
 end
 
