@@ -23,8 +23,15 @@ class ActiveRecord::ConnectionAdapters::TableDefinition
     column_real(name, type, options)
   end
 
+  # alias "index :name, 10" as "index :name, length: 10"
+  def index(column_name, options = {})
+    options = { length: options } if Numeric === options
+    indexes << [column_name, options]
+  end
+
   # alias "index!" as {unique:true}
   def index!(column_name, options = {})
+    options = { length: options } if Numeric === options
     indexes << [column_name, options.merge(unique:true)]
   end
 end
