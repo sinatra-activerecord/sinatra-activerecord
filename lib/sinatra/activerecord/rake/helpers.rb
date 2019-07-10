@@ -100,7 +100,7 @@ class ActiveRecord::SchemaDumper
     string.sub!(/(?:, options: "[^"]*")?, force: :cascade/, '') # suppress db options
     string.gsub!(/^(.+?)("(?=, ))(.*), null: false/, '\1!\2\3') # use "!" for not null
     string.sub!(/^(?= *t.index)/, "\n") # put newline before indexes
-    string.gsub!(/^( *t.index .*?), name: "[^"]+"/, '\1') # suppress index name
+    string.gsub!(/^( *t.index .*?), name: "index_[^"]+"/, '\1') # suppress index name
     string.gsub!(/^( *t.index)( .*?), unique: true/, '\1!\2') # unique index
     string.gsub!(/^( *t\.)(text)( .*?)(, limit: )(\d+)/) do # adjust text types
       case $5
