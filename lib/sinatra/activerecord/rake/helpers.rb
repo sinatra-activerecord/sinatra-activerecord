@@ -15,6 +15,14 @@ class ActiveRecord::ConnectionAdapters::TableDefinition
       options[:limit] ||= $default_primary_key_type == :integer ? 4 : 8
     end
 
+    # money defaults to "t.decimal :field!, [9,2], [0]"
+    if type == :money
+      type = :decimal
+      options.key?(:precision) or options[:precision] = 9
+      options.key?(:scale    ) or options[:scale    ] = 2
+      options.key?(:default  ) or options[:default  ] = 0
+    end
+
     # alias "field!" as {null:false}
     if name =~ /!$/ and name = $`
       options[:null] = false
@@ -48,7 +56,7 @@ end
 # aliases Numeric as limit and Array as default
 module ActiveRecord::ConnectionAdapters::ColumnMethods
   [ :bigint, :binary, :boolean, :date, :datetime, :decimal, :float,
-    :integer, :json, :string, :text, :time, :timestamp, :virtual
+    :integer, :json, :string, :text, :time, :timestamp, :virtual, :money
   ].each do |column_type|
     module_eval <<-CODE, __FILE__, __LINE__ + 1
       def #{column_type}(*args, **options)
