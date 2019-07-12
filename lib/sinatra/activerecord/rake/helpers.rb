@@ -127,7 +127,8 @@ class ActiveRecord::SchemaDumper
     string.gsub!(/^( *t\..+?), limit: (\S+)/, '\1, \2') # alias for limit
     string.gsub!(/^( *t\..+?), default: (.*?)(?= *$|, )/, '\1, [\2]') # alias for default
     string.gsub!(/^( *t.boolean +"\w+!"), \[false\]/, '\1') # default boolean is false
-    string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') # alias for decimal(p,s)
+    string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') and # alias for decimal(p,s)
+    string.gsub!(/, \["(.*?)\.0"\]/, ', [\1]') # ["0.0"] and ["1.0"] -> [0] and [1]
 
     # line up column definitions
     @@wide = [string.scan(/^ *t\.\S+/).max_by(&:size)&.size || 0, @@wide].max
