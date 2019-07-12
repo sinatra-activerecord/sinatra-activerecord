@@ -55,9 +55,14 @@ module ActiveRecord::ConnectionAdapters::ColumnMethods
         args.delete_if do |item|
           case item
           when Numeric then options[:limit  ] = item   ; true
-          when Array   then options[:default] = item[0]; true
+          when Array
+            case item.size
+              when 1 then options[:default  ] = item[0]; true
+              when 2 then options[:precision] = item[0]; options[:scale] = item[1]; true
+            end
           end
         end
+        options[:default] ||= false if (:#{column_type} == :boolean) && (args[0] =~ /!$/)
         args.each { |name| column(name, :#{column_type}, options) }
       end
     CODE
@@ -113,6 +118,8 @@ class ActiveRecord::SchemaDumper
     end
     string.gsub!(/^( *t\..+?), limit: (\S+)/, '\1, \2') # alias for limit
     string.gsub!(/^( *t\..+?), default: (.*?)(?= *$|, )/, '\1, [\2]') # alias for default
+    string.gsub!(/^( *t.boolean +"\w+!"), \[false\]/, '\1') # default boolean is false
+    string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') # alias for decimal(p,s)
 
     # line up column definitions
     @@wide = [string.scan(/^ *t\.\S+/).max_by(&:size)&.size || 0, @@wide].max
