@@ -15,8 +15,8 @@ class ActiveRecord::ConnectionAdapters::TableDefinition
       options[:limit] ||= $default_primary_key_type == :integer ? 4 : 8
     end
 
-    # money defaults to "t.decimal :field!, [9,2], [0]"
-    if type == :money
+    # digits defaults to "t.decimal :field, [9,2], [0]"
+    if type == :digits
       type = :decimal
       options.key?(:precision) or options[:precision] = 9
       options.key?(:scale    ) or options[:scale    ] = 2
@@ -56,7 +56,7 @@ end
 # aliases Numeric as limit and Array as default
 module ActiveRecord::ConnectionAdapters::ColumnMethods
   [ :bigint, :binary, :boolean, :date, :datetime, :decimal, :float,
-    :integer, :json, :string, :text, :time, :timestamp, :virtual, :money
+    :integer, :json, :string, :text, :time, :timestamp, :virtual, :digits
   ].each do |column_type|
     module_eval <<-CODE, __FILE__, __LINE__ + 1
       def #{column_type}(*args, **options)
@@ -129,6 +129,7 @@ class ActiveRecord::SchemaDumper
     string.gsub!(/^( *t.boolean +"\w+!"), \[false\]/, '\1') # default boolean is false
     string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') and # alias for decimal(p,s)
     string.gsub!(/, \["(.*?)\.0"\]/, ', [\1]') # ["0.0"] and ["1.0"] -> [0] and [1]
+    string.gsub!(/( *t\.)decimal ("[^"]+"), \[9, 2\], \[0\]$/, '\1digits \2') # slipstream digits
 
     # line up column names
     @@wide = [string.scan(/^ *t\.\S+/).max_by(&:size)&.size || 0, @@wide].max
