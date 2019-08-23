@@ -130,9 +130,13 @@ class ActiveRecord::SchemaDumper
     string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') and # alias for decimal(p,s)
     string.gsub!(/, \["(.*?)\.0"\]/, ', [\1]') # ["0.0"] and ["1.0"] -> [0] and [1]
 
-    # line up column definitions
+    # line up column names
     @@wide = [string.scan(/^ *t\.\S+/).max_by(&:size)&.size || 0, @@wide].max
     string.gsub!(/^( *(?:t\.\S+|create_table))/) {$1.ljust(@@wide)}
+
+    # line up column options
+    wide = string.scan(/^ *t\.(?!index)[^,\n]+/).max_by(&:size)&.size
+    string.gsub!(/^( *t\.(?!index)[^,\n]+(?=,))/) { $1.ljust(wide)}
 
     # symbolize tables, fields, and indexes
     string.gsub!(/^( *(?:t\.\S+|create_table) +)"([^"]+)"/, '\1:\2')
