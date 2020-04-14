@@ -5,3 +5,4 @@ wiki/
 .DS_Store
 tmp/
 .bundle
+.ruby-version

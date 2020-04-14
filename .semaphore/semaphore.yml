@@ -1,0 +1,41 @@
+version: v1.0
+name: sinatra-activerecord
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+execution_time_limit:
+  minutes: 30
+
+blocks:
+  - name: 'Run tests'
+    task:
+      jobs:
+        - name: rspec
+          matrix:
+            - env_var: RUBY_VERSION
+              values: 
+                - "1.9.2"
+                - "2.0"
+                - "2.1"
+                - "2.2"
+                - "2.3"
+                - "2.4"
+                - "2.5"
+                - "2.6"
+                - "2.7"
+            - env_var: RAILS_VERSION
+              values: 
+                - "3.2"
+                - "4.0"
+                - "4.1"
+                - "4.2"
+                - "5.0"
+                - "5.1"
+                - "5.2"
+                - "6.0"
+          commands:
+            - sem-version ruby $RUBY_VERSION
+            - checkout
+            - bundle install -j8
+            - bundle exec rspec
