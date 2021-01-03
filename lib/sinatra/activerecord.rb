@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'active_record'
 require 'active_support/core_ext/hash/keys'
+require 'active_record/database_configurations/connection_url_resolver'
 
 require 'logger'
 require 'pathname'
