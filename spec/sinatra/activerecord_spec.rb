@@ -108,6 +108,22 @@ RSpec.describe "the sinatra extension" do
     FileUtils.rm_rf("config")
   end
 
+  it "allows specifying multiple environment databases, without URL precedence" do
+    ENV["DATABASE_URL"] = database_url
+    FileUtils.mkdir_p("config")
+    FileUtils.copy_file("#{Dir.pwd}/spec/fixtures/database.yml", "#{Dir.pwd}/config/database.yml")
+
+    app
+    ActiveRecord::Base.establish_connection(:multiple_db_test)
+
+    # it does not use the database name in the URL, but the one defined in database.yml
+    expect(app.database.connection.raw_connection.filename).to_not include(url_sqlite_db_name)
+
+    expect{ActiveRecord::Base.connection}.not_to raise_error
+
+    FileUtils.rm_rf("config")
+  end
+
   it "expands database file path from the app root if present" do
     app.root = "spec/fixtures"
     app.database_file = "database.yml"
