@@ -17,14 +17,9 @@ jobs:
           - '2.6.x'
           - '2.7.x'
         activerecord:
-          - '4.1'
           - '5.0'
           - '6.0'
           - '6.1'
-        exclude:
-        # active record 4.1 is not compatible with ruby 2.7 due to BigDecimal changes
-        - ruby: '2.7.x'
-          activerecord: '4.1' 
 
     steps:
     - name: Checkout current branch
