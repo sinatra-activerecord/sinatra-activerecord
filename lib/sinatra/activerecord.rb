@@ -32,8 +32,17 @@ module Sinatra
         end
         
         # url_spec will override the same key, if exist
-        final_spec = file_spec.keys.map{ |env| [env, file_spec[env].merge(url_spec)] }.to_h
-
+        # final_spec = file_spec.keys.map{ |env| [env, file_spec[env].merge(url_spec)] }.to_h
+        # configuration concerns only one database
+        final_spec = file_spec.keys.map do |env|
+          config = file_spec[env]
+          if config.is_a?(Hash) && config.all? { |_k, v| v.is_a?(Hash) }
+           [env, config]
+          else
+           [env, config.merge(url_spec)]
+          end
+        end.to_h
+         
         app.set :database, final_spec
       elsif ENV['DATABASE_URL']
         app.set :database, ENV['DATABASE_URL']

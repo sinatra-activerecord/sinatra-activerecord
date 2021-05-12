@@ -12,3 +12,13 @@ another_test:
   adapter: "sqlite3"
   database: "tmp/bar_test.sqlite3"
   pool: 3
+
+multiple_db_test:
+  primary:
+    adapter: "sqlite3"
+    database: "tmp/foo.sqlite3"
+    pool: 3
+  secondary:
+    adapter: "sqlite3"
+    database: "tmp/bar_test.sqlite3"
+    pool: 3
