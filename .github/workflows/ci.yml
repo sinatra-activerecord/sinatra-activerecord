@@ -21,6 +21,7 @@ jobs:
           - '5.0'
           - '6.0'
           - '6.1'
+          - '7.0'
         exclude:
         # active record 4.1 is not compatible with ruby 2.7 due to BigDecimal changes
         - ruby: '2.7.x'
