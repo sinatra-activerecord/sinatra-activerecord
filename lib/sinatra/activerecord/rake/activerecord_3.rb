@@ -8,7 +8,7 @@ module Rails
   end
 
   def env
-    ActiveSupport::StringInquirer.new(ENV["RACK_ENV"] || "development")
+    ActiveSupport::StringInquirer.new(ENV["APP_ENV"] || ENV["RACK_ENV"] || "development")
   end
 
   def application

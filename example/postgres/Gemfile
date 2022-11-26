@@ -4,6 +4,6 @@ gem 'pg'
 gem 'rake'
 gem 'sinatra'
 gem 'sinatra-activerecord', path: ".."
-gem 'activerecord', "3.2.17"
+gem 'activerecord', '>= 4.1'
 gem 'pry'
 gem 'pry-byebug'

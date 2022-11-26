@@ -1,5 +1,28 @@
 # Changelog
 
+## Version 2.0.26
+Removed unused variables, and removed support for ruby 2.5
+
+## Version 2.0.25
+- Added support for ActiveRecord 7.0
+
+## Version 2.0.24
+- Fixed compatibility with Psych version 4.0.0+ , use unsafe_load if available.
+- Added Ruby 3.0 and head (latest version of Ruby) to the CI matrix
+Thanks Onaka (@onk) for contributing to this.
+
+## Version 2.0.23
+- For ActiveRecord 6.0 and above, if the the configuration (database.yml) has multiple databases defined, it will discard the DATABASE_URL spec (if it is supplied from environment variables), following [Active Record convention here](https://github.com/rails/rails/blob/main/activerecord/lib/active_record/database_configurations.rb#L169). Thanks JoakimKlaxit (@JoakimKlaxit) for contributing to this.
+
+
+## Version 2.0.22
+
+- Added compability fix for ActiveRecord 6.1 ([#107](https://github.com/janko-m/sinatra-activerecord/issue/107)), as they have moved ConnectionUrlResolver to another module. Thanks Richard Peck(@richpeck) for contributing to this.
+
+## Version 2.0.21
+
+- If both config/database.yml and $DATABASE_URL is present, the database configuration will be merged from this two, and $DATABASE_URL's variables will take precedence. (https://github.com/sinatra-activerecord/sinatra-activerecord/pull/103)
+
 ## Version 2.0.9
 
 - Don't try to load config/database.yml if `$DATABASE_URL` is present ([#55](https://github.com/janko-m/sinatra-activerecord/pull/55), thanks to @exviva)

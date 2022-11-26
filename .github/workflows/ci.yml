@@ -1,0 +1,73 @@
+name: rspec
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby:
+          - '2.6'
+          - '2.7'
+          - '3.0'
+          - '3.1'
+        activerecord:
+          - '4.1'
+          - '5.0'
+          - '6.0'
+          - '6.1'
+          - '7.0'
+        exclude:
+        # active record 4.1 is not compatible with ruby 2.7 due to BigDecimal changes
+        - ruby: '2.7'
+          activerecord: '4.1' 
+        # ActiveRecord 5.x doesn't work on Ruby 3.0+
+        - ruby: '3.0'
+          activerecord: '4.1'
+        - ruby: '3.0'
+          activerecord: '5.0'
+        - ruby: '3.1'
+          activerecord: '4.1'
+        - ruby: '3.1'
+          activerecord: '5.0'
+        # ActiveRecord 7.x doesn't work on Ruby 2.6 and below
+        - ruby: '2.6'
+          activerecord: '7.0'
+        # Ruby 3.1 has problem with Rails 7 currently (https://gist.github.com/yahonda/2776d8d7b6ea7045359f38c10449937b#add-classdescendants)
+        - ruby: '3.1'
+          activerecord: '7.0'
+
+    steps:
+    - name: Checkout current branch
+      uses: actions/checkout@v2
+
+    - name: Install sqlite3 on system
+      run: |
+        sudo apt-get install libsqlite3-dev
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+    
+    - name : Install dependency
+      run: |
+        gem install bundler
+        bundle install
+        gem update --system 3.3.3
+        
+    - name: Run appraisal to install different active records version
+      run: |
+        bundle exec appraisal install
+        
+    - name: Run rspec test across active record
+      run: |
+        bundle exec appraisal activerecord-${{ matrix.activerecord }} rspec
+
+    

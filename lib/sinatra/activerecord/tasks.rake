@@ -5,13 +5,21 @@ require "fileutils"
 namespace :db do
   desc "Create a migration (parameters: NAME, VERSION)"
   task :create_migration do
-    unless ENV["NAME"]
+    ARGV.each do |a| 
+      # when we run 'rake db:create_migration create_users v1',
+      # rake will also run 'rake create_users' and 'rake v1'
+      # to avoid rake abort, we define an empty method for these (ie: "task :create_users do ; end")
+      next if a.nil?
+      task a.to_sym do ; end 
+    end
+
+    unless ENV["NAME"] || ARGV[1]
       puts "No NAME specified. Example usage: `rake db:create_migration NAME=create_users`"
       exit
     end
 
-    name    = ENV["NAME"]
-    version = ENV["VERSION"] || Time.now.utc.strftime("%Y%m%d%H%M%S")
+    name    = ENV["NAME"] || ARGV[1]
+    version = ENV["VERSION"] || ARGV[2] || Time.now.utc.strftime("%Y%m%d%H%M%S")
 
     ActiveRecord::Migrator.migrations_paths.each do |directory|
       next unless File.exist?(directory)
