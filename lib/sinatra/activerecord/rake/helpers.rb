@@ -3,6 +3,7 @@
 # #!# NOTE: We should make this a class instance var instead of $global
 $default_primary_key_type = :integer # bigint integer
 
+# wrangle schema dump to something more elegant
 class ActiveRecord::ConnectionAdapters::TableDefinition
   alias_method :column_real, :column
   def column(name, type, options = {})
@@ -83,7 +84,7 @@ module ActiveRecord::ConnectionAdapters::ColumnMethods
 end
 
 # use default primary_key type
-class ActiveRecord::ConnectionAdapters::SchemaDumper
+class ActiveRecord::SchemaDumper
   def default_primary_key?(column)
     schema_type(column) == $default_primary_key_type
   end
@@ -100,6 +101,8 @@ class ActiveRecord::SchemaDumper
     string = buffer.string
 
     string = $' if string =~ /^(?=\w)/ # remove canned instructions
+    string.sub!(/(?<=Schema)\[.*?\](?=\.define)/, '') # remove version
+    string << "\n"
 
     stream.print string
   end
@@ -109,8 +112,8 @@ class ActiveRecord::SchemaDumper
     buffer = StringIO.new
     table_real(table, buffer)
     string = buffer.string
-
-    string.sub!(/(?:, options: "[^"]*")?, force: :cascade/, '') # suppress db options
+    string.sub!(/(?:, (?:charset|collation|options): "[^"]*")*, force: :cascade/, '') # suppress options
+    string.sub!(/, id: :#{$default_primary_key_type}\b/o, '') # remove default id types
     string.gsub!(/^(.+?)("(?=, ))(.*), null: false/, '\1!\2\3') # use "!" for not null
     string.sub!(/^(?= *t.index)/, "\n") # put newline before indexes
     string.gsub!(/^( *t.index .*?), name: "index_[^"]+"/, '\1') # suppress index name
@@ -127,6 +130,7 @@ class ActiveRecord::SchemaDumper
     string.gsub!(/^( *t\..+?), limit: (\S+)/, '\1, \2') # alias for limit
     string.gsub!(/^( *t\..+?), default: (.*?)(?= *$|, )/, '\1, [\2]') # alias for default
     string.gsub!(/^( *t.boolean +"\w+!"), \[false\]/, '\1') # default boolean is false
+    string.gsub!(/, precision: nil/, '') # remove worthless info
     string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') and # alias for decimal(p,s)
     string.gsub!(/, \["(.*?)\.0"\]/, ', [\1]') # ["0.0"] and ["1.0"] -> [0] and [1]
     string.gsub!(/( *t\.)decimal ("[^"]+"), \[9, 2\], \[0\]$/, '\1digits \2') # slipstream digits
