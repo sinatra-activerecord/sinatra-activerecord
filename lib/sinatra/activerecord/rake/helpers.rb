@@ -45,6 +45,7 @@ class ActiveRecord::ConnectionAdapters::TableDefinition
   end
 end
 
+# TODO: confirm this is still needed
 # use default primary_key type
 class ActiveRecord::ConnectionAdapters::ReferenceDefinition
   alias_method :initialize_real, :initialize
