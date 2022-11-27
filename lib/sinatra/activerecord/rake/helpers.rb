@@ -83,16 +83,13 @@ module ActiveRecord::ConnectionAdapters::ColumnMethods
   alias_method :id, $default_primary_key_type # use default primary_key type
 end
 
-# use default primary_key type
-class ActiveRecord::SchemaDumper
-  def default_primary_key?(column)
-    schema_type(column) == $default_primary_key_type
-  end
-end
-
 # for schema dump, adjust output
 class ActiveRecord::SchemaDumper
   @@wide = 14
+
+  def default_primary_key?(column)
+    schema_type(column) == $default_primary_key_type
+  end
 
   alias_method :header_real, :header
   def header(stream)
