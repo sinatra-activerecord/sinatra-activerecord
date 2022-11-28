@@ -1,96 +1,16 @@
-# ==[ Enhancements to ActiveRecord ]==
+$default_primary_key_type = :integer
 
-# #!# NOTE: We should make this a class instance var instead of $global
-$default_primary_key_type = :integer # bigint integer
+# NOTE: It would be great if the following worked, but I get this error:
+#       "TypeError: superclass mismatch for class SchemaDumper"
+#
+# class ActiveRecord::ConnectionAdapters::SchemaDumper
+#   private
+#     def default_primary_key?(column)
+#       schema_type(column) == $default_primary_key_type
+#     end
+# end
 
-# wrangle schema dump to something more elegant
-class ActiveRecord::ConnectionAdapters::TableDefinition
-  alias_method :column_real, :column
-  def column(name, type, options = {})
-    name = name.to_s
-    type = type.to_sym if type
-    options = options.dup
-
-    # use default primary_key type
-    if type == :primary_key
-      options[:limit] ||= $default_primary_key_type == :integer ? 4 : 8
-    end
-
-    # digits defaults to "t.decimal :field, [9,2], [0]"
-    if type == :digits
-      type = :decimal
-      options.key?(:precision) or options[:precision] = 9
-      options.key?(:scale    ) or options[:scale    ] = 2
-      options.key?(:default  ) or options[:default  ] = 0
-    end
-
-    # alias "field!" as {null:false}
-    if name =~ /!$/ and name = $`
-      options[:null] = false
-    end
-
-    column_real(name, type, options)
-  end
-
-  # alias "index :name, 10" as "index :name, length: 10"
-  def index(column_name, options = {})
-    options = { length: options } if Numeric === options
-    indexes << [column_name, options]
-  end
-
-  # alias "index!" as {unique:true}
-  def index!(column_name, options = {})
-    options = { length: options } if Numeric === options
-    indexes << [column_name, options.merge(unique:true)]
-  end
-end
-
-# TODO: confirm this is still needed
-# use default primary_key type
-class ActiveRecord::ConnectionAdapters::ReferenceDefinition
-  alias_method :initialize_real, :initialize
-  def initialize(name, **options)
-    options[:type] ||= $default_primary_key_type
-    initialize_real(name, **options)
-  end
-end
-
-# aliases Numeric as limit and Array as default
-module ActiveRecord::ConnectionAdapters::ColumnMethods
-  [ :bigint, :binary, :boolean, :date, :datetime, :decimal, :float,
-    :integer, :json, :string, :text, :time, :timestamp, :virtual, :digits
-  ].each do |column_type|
-    module_eval <<-CODE, __FILE__, __LINE__ + 1
-      def #{column_type}(*args, **options)
-        args.delete_if do |item|
-          case item
-          when Numeric then options[:limit  ] = item   ; true
-          when Array
-            case item.size
-              when 1 then options[:default  ] = item[0]; true
-              when 2 then options[:precision] = item[0]; options[:scale] = item[1]; true
-            end
-          end
-        end
-        options[:default] ||= false if (:#{column_type} == :boolean) && (args[0] =~ /!$/)
-        args.each { |name| column(name, :#{column_type}, options) }
-      end
-    CODE
-      # def #{column_type}!(*args, **options)
-      #   #{column_type}(*args, **options.merge(index:true))
-      # end
-  end
-  alias_method :numeric, :decimal
-  alias_method :id, $default_primary_key_type # use default primary_key type
-end
-
-# for schema dump, adjust output
 class ActiveRecord::SchemaDumper
-  @@wide = 14
-
-  def default_primary_key?(column)
-    schema_type(column) == $default_primary_key_type
-  end
 
   alias_method :header_real, :header
   def header(stream)
@@ -98,8 +18,9 @@ class ActiveRecord::SchemaDumper
     header_real(buffer)
     string = buffer.string
 
-    string = $' if string =~ /^(?=\w)/ # remove canned instructions
-    string.sub!(/(?<=Schema)\[.*?\](?=\.define)/, '') # remove version
+    # adjust header to keep it simple
+    string = $' if string =~ /^(?=\w)/ # skip past comments
+    string.sub!(/(?<=Schema)\[[^\]]*\](?=\.define)/, '') # remove version
     string << "\n"
 
     stream.print string
@@ -110,12 +31,11 @@ class ActiveRecord::SchemaDumper
     buffer = StringIO.new
     table_real(table, buffer)
     string = buffer.string
-    string.sub!(/(?:, (?:charset|collation|options): "[^"]*")*, force: :cascade/, '') # suppress options
-    string.sub!(/, id: :#{$default_primary_key_type}\b/o, '') # remove default id types
-    string.gsub!(/^(.+?)("(?=, ))(.*), null: false/, '\1!\2\3') # use "!" for not null
-    string.sub!(/^(?= *t.index)/, "\n") # put newline before indexes
-    string.gsub!(/^( *t.index .*?), name: "index_[^"]+"/, '\1') # suppress index name
-    string.gsub!(/^( *t.index)( .*?), unique: true/, '\1!\2') # unique index
+
+    # adjust table descriptions using shorthand notation
+    # string.sub!(/, id: :#{$default_primary_key_type}\b/o, '') # skip primary keys with default type
+    string.sub!(/(?:, (?:charset|collation|options): "[^"]*")*, force: :cascade/, '') # skip options
+    string.gsub!(/^(.+?)("(?=, ))(.*), null: false/, '\1!\2\3') # add "!" to column name for not null
     string.gsub!(/^( *t\.)(text)( .*?)(, limit: )(\d+)/) do # adjust text types
       case $5
         when "255"        then [$1, 'tinytext'  , $3].join
@@ -125,20 +45,25 @@ class ActiveRecord::SchemaDumper
         else $~.join
       end
     end
-    string.gsub!(/^( *t\..+?), limit: (\S+)/, '\1, \2') # alias for limit
-    string.gsub!(/^( *t\..+?), default: (.*?)(?= *$|, )/, '\1, [\2]') # alias for default
-    string.gsub!(/^( *t.boolean +"\w+!"), \[false\]/, '\1') # default boolean is false
-    string.gsub!(/, precision: nil/, '') # remove worthless info
-    string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') and # alias for decimal(p,s)
-    string.gsub!(/, \["(.*?)\.0"\]/, ', [\1]') # ["0.0"] and ["1.0"] -> [0] and [1]
-    string.gsub!(/( *t\.)decimal ("[^"]+"), \[9, 2\], \[0\]$/, '\1digits \2') # slipstream digits
+    string.gsub!(/^( *t\..+?), limit: (\S+)/, '\1, \2') # "limit: x" is "x"
+    string.gsub!(/^( *t\..+?), default: (.*?)(?= *$|, )/, '\1, [\2]') # "default: x" is "[x]"
+    string.gsub!(/^( *t\.boolean +"\w+!"), \[false\]/, '\1') # booleans default to false, so skip
+    string.gsub!(/, precision: nil/, '') # skip useless precision values
+    string.gsub!(/, precision: (\d+), scale: (\d+)/, ', [\1, \2]') and # "decimal(p,s)" is "[p, s]"
+    string.gsub!(/, \["(\d+)\.0"\]/, ', [\1]') # adjusts defaults like ["4.0"] to [4]
+    string.gsub!(/t\.decimal ("[^"]+"), \[9, 2\], \[0\]$/, 't.digits \1') # use t.digits shortcut
+
+    # adjust indexes
+    string.sub!(/^(?= *t.index)/, "\n") # add a spacer line before indexes
+    string.gsub!(/^( *t.index .*?), name: "index_[^"]+"/, '\1') # strip generated index names
+    string.gsub!(/^( *t.index)( .*?), unique: true/, '\1!\2') # add "!" for unique indexes
 
     # line up column names
-    @@wide = [string.scan(/^ *t\.\S+/).max_by(&:size)&.size || 0, @@wide].max
-    string.gsub!(/^( *(?:t\.\S+|create_table))/) {$1.ljust(@@wide)}
+    wide =[string.scan(/^ *t\.\S+/).map(&:size).max, 14].max
+    string.gsub!(/^( *(?:t\.\S+|create_table))/) {$1.ljust(wide)}
 
     # line up column options
-    wide = string.scan(/^ *t\.(?!index)[^,\n]+/).max_by(&:size)&.size
+    wide = string.scan(/^ *t\.(?!index)[^,\n]+/).map(&:size).max
     string.gsub!(/^( *t\.(?!index)[^,\n]+(?=,))/) { $1.ljust(wide)}
 
     # symbolize tables, fields, and indexes
@@ -151,55 +76,16 @@ class ActiveRecord::SchemaDumper
     stream.print string
   end
 
-  # symbolize foreign keys
   alias_method :foreign_keys_real, :foreign_keys
   def foreign_keys(table, stream)
     buffer = StringIO.new
     foreign_keys_real(table, buffer)
     string = buffer.string
 
+    # adjust foreign key descriptions
     string.gsub!(/^( *add_foreign_key .*?), name: "[^"]+"/, '\1') # suppress key name
     string.gsub!(/"([^"]+)"/, ':\1') # symbolize foreign keys
 
     stream.print string
   end
 end
-
-# for structure dump, suppress message about passing password to mysqldump
-class ActiveRecord::Tasks::MySQLDatabaseTasks
-  alias_method :prepare_command_options_real, :prepare_command_options
-  def prepare_command_options
-    prepare_command_options_real.delete_if {|item| item =~ /\A--.*=\z/}
-  end
-end
-
-# ==[ Foreign keys and constraints ]==
-
-# # use default primary_key type
-# class ActiveRecord::ConnectionAdapters::ReferenceDefinition
-#   def foreign_key_options # fix a bug?
-#     opts = as_options(foreign_key)
-#     opts.key?(:column) ? opts : opts.merge(column: column_name) # use a custom field
-#   end
-# end
-#
-# # allow aliases for limit and default
-# module ActiveRecord::ConnectionAdapters::ColumnMethods
-#   def key(*args, **options)
-#     args[0] = args[0].is_a?(Symbol) ? $`.to_sym : $` if args[0] =~ /!$/
-#     options[:null] = false if $` # alias "field!" as {null:false}
-#
-#     # fk = options[:foreign_key] || options[:foreign_key!]
-#     # options[:foreign_key] = options[:foreign_key!]
-#
-#     options[:foreign_key] = true if (fk = options[:foreign_key]).nil?
-#     options[:foreign_key] = { column: fk.to_s.chomp('!') } and id fk if fk.is_a?(Symbol)
-#     references(*args, **options)
-#   end
-#
-#   def key!(*args, **options)
-#     options[:index] = {} unless Hash === options[:index]
-#     options[:index].update(unique:true) # use key! for unique index
-#     key(*args, **options)
-#   end
-# end
