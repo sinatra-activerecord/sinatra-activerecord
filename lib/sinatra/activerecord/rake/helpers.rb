@@ -1,5 +1,7 @@
 $default_primary_key_type = :integer
 
+# ==[ Schema dump ]==
+
 # NOTE: It would be great if the following worked, but I get this error:
 #       "TypeError: superclass mismatch for class SchemaDumper"
 #
@@ -89,3 +91,6 @@ class ActiveRecord::SchemaDumper
     stream.print string
   end
 end
+
+# ==[ Schema load ]==
+
