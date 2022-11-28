@@ -33,7 +33,7 @@ class ActiveRecord::SchemaDumper
     string = buffer.string
 
     # adjust table descriptions using shorthand notation
-    # string.sub!(/, id: :#{$default_primary_key_type}\b/o, '') # skip primary keys with default type
+    string.sub!(/, id: :#{$default_primary_key_type}\b/o, '') # skip primary keys with default type #!# TODO: remove when we fix the class issue above
     string.sub!(/(?:, (?:charset|collation|options): "[^"]*")*, force: :cascade/, '') # skip options
     string.gsub!(/^(.+?)("(?=, ))(.*), null: false/, '\1!\2\3') # add "!" to column name for not null
     string.gsub!(/^( *t\.)(text)( .*?)(, limit: )(\d+)/) do # adjust text types
