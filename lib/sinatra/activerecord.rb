@@ -31,7 +31,7 @@ module Sinatra
         else
           url_spec = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(url).to_hash
         end
-        
+
         # if the configuration concerns only one database, and url_spec exist, url_spec will override the same key
         # if the configuration has multiple databases (Rails 6.0+ feature), url_spec is discarded
         # Following Active Record config convention
@@ -60,7 +60,7 @@ module Sinatra
 
       # re-connect if database connection dropped (Rails 3 only)
       app.before { ActiveRecord::Base.verify_active_connections! if ActiveRecord::Base.respond_to?(:verify_active_connections!) }
-      app.after { ActiveRecord::Base.clear_active_connections! }
+      app.after { ActiveRecord::Base.connection_handler.clear_active_connections! }
     end
 
     def database_file=(path)
@@ -75,7 +75,7 @@ module Sinatra
       if spec.is_a?(Hash) and spec.symbolize_keys[environment.to_sym]
         ActiveRecord::Base.configurations = spec.stringify_keys
         ActiveRecord::Base.establish_connection(environment.to_sym)
-      elsif spec.is_a?(Hash)     
+      elsif spec.is_a?(Hash)
         ActiveRecord::Base.configurations = {
           environment.to_s => spec.stringify_keys
         }
