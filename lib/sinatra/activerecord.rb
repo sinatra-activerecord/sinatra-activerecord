@@ -59,8 +59,18 @@ module Sinatra
       app.helpers ActiveRecordHelper
 
       # re-connect if database connection dropped (Rails 3 only)
-      app.before { ActiveRecord::Base.verify_active_connections! if ActiveRecord::Base.respond_to?(:verify_active_connections!) }
-      app.after { ActiveRecord::Base.clear_active_connections! }
+      app.before do
+        if ActiveRecord::VERSION::MAJOR == 3
+          ActiveRecord::Base.verify_active_connections! if ActiveRecord::Base.respond_to?(:verify_active_connections!)
+        end
+      end
+      app.after do
+        if ActiveRecord::VERSION::MAJOR < 7
+          ActiveRecord::Base.clear_active_connections!
+        else
+          ActiveRecord::Base.connection_handler.clear_active_connections!
+        end
+      end
     end
 
     def database_file=(path)
