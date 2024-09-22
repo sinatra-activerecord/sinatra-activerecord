@@ -93,7 +93,7 @@ module Sinatra
         ActiveRecord::Base.establish_connection(spec.stringify_keys)
       else
         if Gem.loaded_specs["activerecord"].version >= Gem::Version.create('6.0')
-          ActiveRecord::Base.configurations ||= ActiveRecord::DatabaseConfigurations.new({}).resolve(spec)
+          ActiveRecord::Base.configurations = ActiveRecord::DatabaseConfigurations.new({environment.to_s => spec, "default_env" => spec})
         else
           ActiveRecord::Base.configurations ||= {}
           ActiveRecord::Base.configurations[environment.to_s] = ActiveRecord::ConnectionAdapters::ConnectionSpecification::ConnectionUrlResolver.new(spec).to_hash
