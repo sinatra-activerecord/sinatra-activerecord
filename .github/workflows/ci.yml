@@ -27,9 +27,40 @@ jobs:
           - '7.0'
           - '8.0'
         exclude:
+        # active record 4.1 is not compatible with ruby 2.7 due to BigDecimal changes
+        - ruby: '2.7'
+          activerecord: '4.1'
+        # ActiveRecord 5.x doesn't work on Ruby 3.0+
+        - ruby: '3.0'
+          activerecord: '4.1'
+        - ruby: '3.0'
+          activerecord: '5.0'
+        - ruby: '3.1'
+          activerecord: '4.1'
+        - ruby: '3.1'
+          activerecord: '5.0'
+        - ruby: '3.2'
+          activerecord: '4.1'
+        - ruby: '3.2'
+          activerecord: '5.0'
+        - ruby: '3.3'
+          activerecord: '4.1'
+        - ruby: '3.3'
+          activerecord: '5.0'
+        # ActiveRecord 7.x doesn't work on Ruby 2.6 and below
+        - ruby: '2.6'
+          activerecord: '7.0'
         # Ruby 3.1 has problem with Rails 7 currently (https://gist.github.com/yahonda/2776d8d7b6ea7045359f38c10449937b#add-classdescendants)
         - ruby: '3.1'
           activerecord: '7.0'
+        # Activerecord 8.x doesn't work on Ruby 3.0 and below
+        - ruby: '2.6'
+          activerecord: '8.0'
+        - ruby: '2.7'
+          activerecord: '8.0'
+        - ruby: '3.0'
+          activerecord: '8.0'
+
 
     steps:
     - name: Checkout current branch
