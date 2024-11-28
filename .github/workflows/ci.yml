@@ -53,12 +53,14 @@ jobs:
         # Ruby 3.1 has problem with Rails 7 currently (https://gist.github.com/yahonda/2776d8d7b6ea7045359f38c10449937b#add-classdescendants)
         - ruby: '3.1'
           activerecord: '7.0'
-        # Activerecord 8.x doesn't work on Ruby 3.0 and below
+        # Activerecord 8.x doesn't work on Ruby 3.1 and below
         - ruby: '2.6'
           activerecord: '8.0'
         - ruby: '2.7'
           activerecord: '8.0'
         - ruby: '3.0'
+          activerecord: '8.0'
+        - ruby: '3.1'
           activerecord: '8.0'
 
 
